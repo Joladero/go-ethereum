@@ -547,12 +547,12 @@ func (self *XEth) NewLogFilter(earliest, latest int64, skip, max int, address []
 	filter.SetEndBlock(latest)
 	filter.SetAddresses(cAddress(address))
 	filter.SetTopics(cTopics(topics))
-	filter.LogsCallback = func(logs vm.Logs) {
+	filter.LogCallback = func(logs *vm.Log, removed bool) {
 		self.logMu.Lock()
 		defer self.logMu.Unlock()
 
 		if queue := self.logQueue[id]; queue != nil {
-			queue.add(logs...)
+			queue.add(logs)
 		}
 	}
 

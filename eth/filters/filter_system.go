@@ -46,6 +46,7 @@ func NewFilterSystem(mux *event.TypeMux) *FilterSystem {
 	}
 	fs.sub = mux.Subscribe(
 		//core.PendingBlockEvent{},
+		core.RemovedLogEvent{},
 		core.ChainEvent{},
 		core.TxPreEvent{},
 		vm.Logs(nil),
@@ -114,10 +115,20 @@ func (fs *FilterSystem) filterLoop() {
 		case vm.Logs:
 			fs.filterMu.RLock()
 			for id, filter := range fs.filters {
-				if filter.LogsCallback != nil && fs.created[id].Before(event.Time) {
-					msgs := filter.FilterLogs(ev)
-					if len(msgs) > 0 {
-						filter.LogsCallback(msgs)
+				if filter.LogCallback != nil && fs.created[id].Before(event.Time) {
+					for _, log := range filter.FilterLogs(ev) {
+						filter.LogCallback(log, false)
+					}
+				}
+			}
+			fs.filterMu.RUnlock()
+
+		case core.RemovedLogEvent:
+			fs.filterMu.RLock()
+			for id, filter := range fs.filters {
+				if filter.LogCallback != nil && fs.created[id].Before(event.Time) {
+					for _, removedLog := range ev.Logs {
+						filter.LogCallback(removedLog, true)
 					}
 				}
 			}
