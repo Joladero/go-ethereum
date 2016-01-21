@@ -34,18 +34,22 @@ type VMEnv struct {
 	typ    vm.Type
 	// structured logging
 	logs []vm.StructLog
+	evm  *vm.Vm
 }
 
 func NewEnv(state *state.StateDB, chain *BlockChain, msg Message, header *types.Header) *VMEnv {
-	return &VMEnv{
+	env := &VMEnv{
 		chain:  chain,
 		state:  state,
 		header: header,
 		msg:    msg,
 		typ:    vm.StdVmTy,
 	}
+	env.evm = vm.EVM(env)
+	return env
 }
 
+func (self *VMEnv) Vm() *vm.Vm               { return self.evm }
 func (self *VMEnv) Origin() common.Address   { f, _ := self.msg.From(); return f }
 func (self *VMEnv) BlockNumber() *big.Int    { return self.header.Number }
 func (self *VMEnv) Coinbase() common.Address { return self.header.Coinbase }
