@@ -176,7 +176,7 @@ type VMEnv struct {
 	time  *big.Int
 	logs  []vm.StructLog
 
-	evm *vm.Vm
+	evm *vm.EVM
 }
 
 func NewEnv(state *state.StateDB, transactor common.Address, value *big.Int) *VMEnv {
@@ -187,11 +187,11 @@ func NewEnv(state *state.StateDB, transactor common.Address, value *big.Int) *VM
 		value:      value,
 		time:       big.NewInt(time.Now().Unix()),
 	}
-	env.evm = vm.EVM(env)
+	env.evm = vm.New(env)
 	return env
 }
 
-func (self *VMEnv) Vm() *vm.Vm                 { return self.evm }
+func (self *VMEnv) Vm() vm.Vm                  { return self.evm }
 func (self *VMEnv) Db() vm.Database            { return self.state }
 func (self *VMEnv) MakeSnapshot() vm.Database  { return self.state.Copy() }
 func (self *VMEnv) SetSnapshot(db vm.Database) { self.state.Set(db.(*state.StateDB)) }
