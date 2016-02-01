@@ -253,7 +253,8 @@ func (self *StateTransition) transitionDb() (ret []byte, usedGas *big.Int, err e
 		err = nil
 	}
 
-	if vm.Debug {
+	logs := vmenv.StructLogs()
+	if len(logs) > 0 {
 		vm.StdErrFormat(vmenv.StructLogs())
 	}
 

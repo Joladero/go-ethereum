@@ -45,7 +45,7 @@ func NewEnv(state *state.StateDB, chain *BlockChain, msg Message, header *types.
 		msg:    msg,
 		typ:    vm.StdVmTy,
 	}
-	env.evm = vm.New(env)
+	env.evm = vm.New(env, nil)
 	return env
 }
 

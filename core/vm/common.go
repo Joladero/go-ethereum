@@ -24,9 +24,6 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 )
 
-// Global Debug flag indicating Debug VM (full logging)
-var Debug bool
-
 // Type is the VM type accepted by **NewVm**
 type Type byte
 

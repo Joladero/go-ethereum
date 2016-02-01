@@ -203,11 +203,6 @@ var (
 		Value: "",
 	}
 
-	// vm flags
-	VMDebugFlag = cli.BoolFlag{
-		Name:  "vmdebug",
-		Usage: "Virtual Machine debug output",
-	}
 	VMForceJitFlag = cli.BoolFlag{
 		Name:  "forcejit",
 		Usage: "Force the JIT VM to take precedence",
@@ -297,7 +292,7 @@ var (
 		Value: DirectoryString{common.DefaultIpcPath()},
 	}
 	WSEnabledFlag = cli.BoolFlag{
-		Name: "ws",
+		Name:  "ws",
 		Usage: "Enable the WS-RPC server",
 	}
 	WSListenAddrFlag = cli.StringFlag{
@@ -690,9 +685,6 @@ func MakeSystemNode(name, version string, extra []byte, ctx *cli.Context) *node.
 		if !ctx.GlobalIsSet(WhisperEnabledFlag.Name) {
 			shhEnable = true
 		}
-		if !ctx.GlobalIsSet(VMDebugFlag.Name) {
-			vm.Debug = true
-		}
 		ethConf.PowTest = true
 	}
 	// Assemble and return the protocol stack
@@ -721,9 +713,6 @@ func SetupLogger(ctx *cli.Context) {
 	glog.SetToStderr(true)
 	if ctx.GlobalIsSet(LogFileFlag.Name) {
 		logger.New("", ctx.GlobalString(LogFileFlag.Name), ctx.GlobalInt(VerbosityFlag.Name))
-	}
-	if ctx.GlobalIsSet(VMDebugFlag.Name) {
-		vm.Debug = ctx.GlobalBool(VMDebugFlag.Name)
 	}
 }
 

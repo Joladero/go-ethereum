@@ -1396,9 +1396,6 @@ func (api *PrivateDebugAPI) ProcessBlock(number uint64) (bool, error) {
 	if block == nil {
 		return false, fmt.Errorf("block #%d not found", number)
 	}
-	// Temporarily enable debugging
-	defer func(old bool) { vm.Debug = old }(vm.Debug)
-	vm.Debug = true
 
 	// Validate and reprocess the block
 	var (

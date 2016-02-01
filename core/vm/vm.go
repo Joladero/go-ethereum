@@ -28,14 +28,27 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 )
 
+type Config struct {
+	Debug bool
+}
+
 // Vm is an EVM and implements VirtualMachine
 type EVM struct {
 	env       Environment
 	jumpTable vmJumpTable
+	conf      *Config
 }
 
-func New(env Environment) *EVM {
-	return &EVM{env: env, jumpTable: newJumpTable(env.BlockNumber())}
+func New(env Environment, cfg *Config) *EVM {
+	// initialise a default config if none is present
+	if cfg == nil {
+		cfg = new(Config)
+	}
+	return &EVM{
+		env:       env,
+		jumpTable: newJumpTable(env.BlockNumber()),
+		conf:      cfg,
+	}
 }
 
 // Run loops and evaluates the contract's code with the given input data
@@ -361,7 +374,7 @@ func (evm *EVM) RunPrecompiled(p *PrecompiledAccount, input []byte, contract *Co
 // log emits a log event to the environment for each opcode encountered. This is not to be confused with the
 // LOG* opcode.
 func (evm *EVM) log(pc uint64, op OpCode, gas, cost *big.Int, memory *Memory, stack *stack, contract *Contract, err error) {
-	if Debug {
+	if evm.conf.Debug {
 		mem := make([]byte, len(memory.Data()))
 		copy(mem, memory.Data())
 
