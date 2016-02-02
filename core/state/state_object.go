@@ -268,10 +268,12 @@ func (self *StateObject) EachStorage(cb func(key, value []byte)) {
 	}
 }
 
-func (self *StateObject) AccessStorage(cb func(key, value []byte) bool) {
+func (self *StateObject) ModifiedStorage(cb func(key, value []byte) bool) {
 	for h, sv := range self.storage {
-		if !cb([]byte(h), sv.value.Bytes()) {
-			return
+		if sv.dirty {
+			if !cb([]byte(h), sv.value.Bytes()) {
+				return
+			}
 		}
 	}
 }

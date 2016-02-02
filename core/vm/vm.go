@@ -383,7 +383,7 @@ func (evm *EVM) log(pc uint64, op OpCode, gas, cost *big.Int, memory *Memory, st
 			stck[i] = new(big.Int).Set(item)
 		}
 		storage := make(map[common.Hash][]byte)
-		contract.self.AccessStorage(func(k, v []byte) bool {
+		contract.self.ModifiedStorage(func(k, v []byte) bool {
 			storage[common.BytesToHash(k)] = v
 			return true
 		})

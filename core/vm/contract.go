@@ -28,7 +28,7 @@ type ContractRef interface {
 	Address() common.Address
 	Value() *big.Int
 	SetCode([]byte)
-	AccessStorage(cb func(key, value []byte) bool)
+	ModifiedStorage(cb func(key, value []byte) bool)
 }
 
 // Contract represents an ethereum contract in the state database. It contains
