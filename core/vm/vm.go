@@ -383,8 +383,9 @@ func (evm *EVM) log(pc uint64, op OpCode, gas, cost *big.Int, memory *Memory, st
 			stck[i] = new(big.Int).Set(item)
 		}
 		storage := make(map[common.Hash][]byte)
-		contract.self.EachStorage(func(k, v []byte) {
+		contract.self.AccessStorage(func(k, v []byte) bool {
 			storage[common.BytesToHash(k)] = v
+			return true
 		})
 		evm.env.AddStructLog(StructLog{pc, op, new(big.Int).Set(gas), cost, mem, stck, storage, err})
 	}

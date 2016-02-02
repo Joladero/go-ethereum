@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"os"
 	"sync"
@@ -536,7 +537,7 @@ func (s *PublicBlockChainAPI) doCall(args CallArgs, blockNr rpc.BlockNumber) (st
 		}
 
 		header := s.bc.CurrentBlock().Header()
-		vmenv := core.NewEnv(stateDb, s.bc, msg, header)
+		vmenv := core.NewEnv(stateDb, s.bc, msg, header, nil)
 		gp := new(core.GasPool).AddGas(common.MaxBig)
 		res, gas, err := core.ApplyMessage(vmenv, msg, gp)
 		if len(res) == 0 { // backwards compatability
@@ -1389,14 +1390,58 @@ func NewPrivateDebugAPI(eth *Ethereum) *PrivateDebugAPI {
 	return &PrivateDebugAPI{eth: eth}
 }
 
-// ProcessBlock reprocesses an already owned block.
-func (api *PrivateDebugAPI) ProcessBlock(number uint64) (bool, error) {
+// Block processes the given block's RLP but does not import the block in to
+// the chain.
+func (api *PrivateDebugAPI) Block(blockRlp []byte) (bool, error) {
+	var block types.Block
+	err := rlp.Decode(bytes.NewReader(blockRlp), &block)
+	if err != nil {
+		return false, fmt.Errorf("could not decode block: %v", err)
+	}
+
+	return api.debugBlock(&block)
+}
+
+// BlockFromFile loads the block's RLP from the given file name and attempts to
+// process it but does not import the block in to the chain.
+func (api *PrivateDebugAPI) BlockFromFile(fn string) (bool, error) {
+	file, err := os.Open(fn)
+	if err != nil {
+		return false, fmt.Errorf("could not load file: %v", err)
+	}
+
+	blockRlp, err := ioutil.ReadAll(file)
+	if err != nil {
+		return false, fmt.Errorf("could not read file: %v", err)
+	}
+
+	return api.Block(blockRlp)
+}
+
+// ProcessBlock processes the block by canonical block number.
+func (api *PrivateDebugAPI) BlockByNumber(number uint64) (bool, error) {
 	// Fetch the block that we aim to reprocess
 	block := api.eth.BlockChain().GetBlockByNumber(number)
 	if block == nil {
 		return false, fmt.Errorf("block #%d not found", number)
 	}
 
+	return api.debugBlock(block)
+}
+
+// BlockByHash processes the block by hash.
+func (api *PrivateDebugAPI) BlockByHash(hash common.Hash) (bool, error) {
+	// Fetch the block that we aim to reprocess
+	block := api.eth.BlockChain().GetBlock(hash)
+	if block == nil {
+		return false, fmt.Errorf("block #%x not found", hash)
+	}
+
+	return api.debugBlock(block)
+}
+
+// debugBlock processes the given block but does not save the state.
+func (api *PrivateDebugAPI) debugBlock(block *types.Block) (bool, error) {
 	// Validate and reprocess the block
 	var (
 		blockchain = api.eth.BlockChain()
@@ -1410,7 +1455,7 @@ func (api *PrivateDebugAPI) ProcessBlock(number uint64) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	receipts, _, usedGas, err := processor.Process(block, statedb)
+	receipts, _, usedGas, err := processor.Process(block, statedb, &vm.Config{Debug: true})
 	if err != nil {
 		return false, err
 	}

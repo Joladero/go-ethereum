@@ -26,26 +26,30 @@ import (
 )
 
 type VMEnv struct {
-	state  *state.StateDB
+	// State to use for executing
+	state *state.StateDB
+	// Header information
 	header *types.Header
-	msg    Message
-	depth  int
-	chain  *BlockChain
-	typ    vm.Type
-	// structured logging
+	// Message appliod
+	msg Message
+	// Current execution depth
+	depth int
+	// Blockchain handle
+	chain *BlockChain
+	// Logs for the custom structured logger
 	logs []vm.StructLog
-	evm  *vm.EVM
+	// The Ethereum Virtual Machine
+	evm *vm.EVM
 }
 
-func NewEnv(state *state.StateDB, chain *BlockChain, msg Message, header *types.Header) *VMEnv {
+func NewEnv(state *state.StateDB, chain *BlockChain, msg Message, header *types.Header, cfg *vm.Config) *VMEnv {
 	env := &VMEnv{
 		chain:  chain,
 		state:  state,
 		header: header,
 		msg:    msg,
-		typ:    vm.StdVmTy,
 	}
-	env.evm = vm.New(env, nil)
+	env.evm = vm.New(env, cfg)
 	return env
 }
 
@@ -60,8 +64,6 @@ func (self *VMEnv) Value() *big.Int          { return self.msg.Value() }
 func (self *VMEnv) Db() vm.Database          { return self.state }
 func (self *VMEnv) Depth() int               { return self.depth }
 func (self *VMEnv) SetDepth(i int)           { self.depth = i }
-func (self *VMEnv) VmType() vm.Type          { return self.typ }
-func (self *VMEnv) SetVmType(t vm.Type)      { self.typ = t }
 func (self *VMEnv) GetHash(n uint64) common.Hash {
 	for block := self.chain.GetBlock(self.header.ParentHash); block != nil; block = self.chain.GetBlock(block.ParentHash()) {
 		if block.NumberU64() == n {

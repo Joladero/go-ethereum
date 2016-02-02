@@ -125,6 +125,6 @@ type Account interface {
 	Address() common.Address
 	ReturnGas(*big.Int, *big.Int)
 	SetCode([]byte)
-	EachStorage(cb func(key, value []byte))
+	AccessStorage(cb func(key, value []byte) bool)
 	Value() *big.Int
 }

@@ -309,8 +309,23 @@ web3._extend({
 			params: 1
 		}),
 		new web3._extend.Method({
-			name: 'processBlock',
-			call: 'debug_processBlock',
+			name: 'block',
+			call: 'debug_block',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'blockByFile',
+			call: 'debug_blockByFile',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'blockByNumber',
+			call: 'debug_blockByNumber',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'blockByHash',
+			call: 'debug_blockByHash',
 			params: 1
 		}),
 		new web3._extend.Method({
